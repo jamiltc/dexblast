@@ -1,0 +1,113 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Light Theme Default */
+body {
+  background: linear-gradient(135deg, #ffe585, #ffd045);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.4s;
+}
+
+/* Dark Mode Class */
+body.dark {
+  background: #121212;
+}
+
+/* Theme Button */
+.theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 22px;
+  background: rgba(255,255,255,0.4);
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+
+/* Main Glass Panel */
+.container {
+  width: 380px;
+  padding: 30px;
+  border-radius: 25px;
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(25px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* Wallet */
+.wallet-box p {
+  margin-bottom: 10px;
+}
+
+/* Profile */
+.profile-box {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.profile-box img {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+}
+
+/* Level Box */
+.level-box {
+  margin-top: 25px;
+}
+
+.xp-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(255,255,255,0.4);
+  border-radius: 10px;
+  overflow: hidden;
+}
+#xpFill {
+  width: 0%;
+  height: 100%;
+  background: #ff7b00;
+  transition: 0.3s;
+}
+
+/* Tasks Section */
+.tasks {
+  margin-top: 30px;
+}
+
+.task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255,255,255,0.2);
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+}
+
+/* Buttons */
+button {
+  padding: 10px 14px;
+  border: none;
+  background: #1f1f1f;
+  color: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+}
+button:hover {
+  opacity: 0.8;
+}
