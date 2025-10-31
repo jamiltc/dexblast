@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DexBlast - Mini App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Dark/Light Switch -->
+  <div class="theme-toggle" onclick="toggleTheme()">
+    🌙
+  </div>
+
+  <!-- Glass Panel -->
+  <div class="container">
+
+    <h2>DexBlast Mini App</h2>
+
+    <!-- Wallet Section -->
+    <div class="wallet-box">
+      <p id="walletAddress">Wallet: Not Connected</p>
+      <p id="walletBalance">Balance: -- TON</p>
+
+      <button onclick="connectWallet()">Connect Wallet</button>
+    </div>
+
+    <!-- Profile -->
+    <div class="profile-box">
+      <img id="userPic" src="https://t.me/i/userpic/320/empty.jpg" alt="pfp">
+      <p id="userName">Telegram: Not Logged</p>
+    </div>
+
+    <!-- Level System -->
+    <div class="level-box">
+      <p>Level: <span id="userLevel">1</span></p>
+      <div class="xp-bar">
+        <div id="xpFill"></div>
+      </div>
+      <p><span id="userXP">0</span> / 500 XP</p>
+    </div>
+
+    <!-- Tasks -->
+    <div class="tasks">
+
+      <div class="task-item">
+        <p>Referral Link</p>
+        <button onclick="copyReferral()">Copy Link</button>
+      </div>
+
+      <div class="task-item">
+        <p>Join Channel</p>
+        <button onclick="checkJoin()">Verify</button>
+      </div>
+
+    </div>
+
+  </div>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <script src="script.js"></script>
+</body>
+</html>
