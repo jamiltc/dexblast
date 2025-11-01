@@ -1,3 +1,8 @@
+// Force refresh to bypass Telegram cache
+if (window.location.href.indexOf("?refresh=1") === -1) {
+    window.location.href = window.location.href + "?refresh=1";
+}
+
 // Dark/Light toggle
 function toggleTheme() { document.body.classList.toggle("dark"); }
 
@@ -42,4 +47,5 @@ function copyReferral() {
 
 // Join channel verify
 function checkJoin() { alert("Channel join verification coming soon ✅"); }
+
 
