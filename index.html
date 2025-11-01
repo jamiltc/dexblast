@@ -4,30 +4,41 @@
   <meta charset="UTF-8">
   <title>DexBlast Mini App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+
   <!-- CSS -->
   <link rel="stylesheet" href="style.css">
 
   <!-- Telegram WebApp -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-  <!-- TON Connect -->
+  <!-- TON Connect SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@tonconnect/sdk/dist/tonconnect.min.js"></script>
+
+  <!-- VolcEngine SDK -->
+  <script type="module" src="volcConnect.js"></script>
 </head>
 <body>
 
-  <!-- Dark/Light Toggle -->
   <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
 
-  <!-- Glass Panel -->
   <div class="container">
     <h2>DexBlast Mini App</h2>
 
-    <!-- Wallet Section -->
+    <!-- Wallet Section TON -->
     <div class="wallet-box">
-      <button id="connectWalletBtn">Connect Wallet</button>
+      <button id="connectWalletBtn">Connect TON Wallet</button>
       <p id="walletAddress">Wallet: Not Connected</p>
       <p id="walletBalance">Balance: -- TON</p>
+    </div>
+
+    <!-- Wallet Section Volc -->
+    <div class="wallet-box">
+      <p>Volc Mini Wallet</p>
+      <p id="volcStatus">Status: Disconnected</p>
+      <button id="volcConnectBtn">Connect Volc</button>
+      <button id="volcDisconnectBtn">Disconnect Volc</button>
+      <button id="volcSendBtn">Send Test Message</button>
+      <div id="volcMessages"></div>
     </div>
 
     <!-- Profile -->
@@ -51,7 +62,6 @@
         <p>Referral Link</p>
         <button onclick="copyReferral()">Copy Link</button>
       </div>
-
       <div class="task-item">
         <p>Join Channel</p>
         <button onclick="checkJoin()">Verify</button>
@@ -60,10 +70,7 @@
 
   </div>
 
-  <!-- JS -->
   <script src="script.js"></script>
 </body>
 </html>
-
-
 
