@@ -42,3 +42,8 @@ function copyReferral() {
 
 // Join channel verify
 function checkJoin() { alert("Channel join will verify via API ✅"); }
+const tonConnect = new TonConnect.UI({
+  manifestUrl: "https://jamiltc.github.io/dexblast/manifest.json"
+});
+
+
