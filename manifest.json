@@ -1,1 +1,16 @@
+{
+  "name": "DexBlast Mini App",
+  "description": "Connect your TON wallet and manage DexBlast tasks.",
+  "icons": [
+    {
+      "src": "assets/userpic.png",
+      "type": "image/png",
+      "sizes": "70x70"
+    }
+  ],
+  "start_url": "https://jamiltc.github.io/dexblast/",
+  "display": "standalone",
+  "theme_color": "#ffe585",
+  "background_color": "#ffffff"
+}
 
