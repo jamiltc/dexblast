@@ -24,7 +24,7 @@ walletBtn.addEventListener("click", async () => {
     const wallet = await tonConnect.connect();
     walletAddress.innerText = `Wallet: ${wallet.account}`;
     
-    // Fetch balance (in NanoTON)
+    // Fetch balance in NanoTON
     const balance = await wallet.getBalance();
     walletBalance.innerText = `Balance: ${balance / 1e9} TON`;
   } catch (err) {
@@ -35,15 +35,11 @@ walletBtn.addEventListener("click", async () => {
 
 // Referral
 function copyReferral() {
-  let link = "https://t.me/DexBlastBot?start=USERID";
+  let link = `https://t.me/DexBlastBot?start=USERID`;
   navigator.clipboard.writeText(link);
   alert("Referral Copied ✅");
 }
 
 // Join channel verify
-function checkJoin() { alert("Channel join will verify via API ✅"); }
-const tonConnect = new TonConnect.UI({
-  manifestUrl: "https://jamiltc.github.io/dexblast/manifest.json"
-});
-
+function checkJoin() { alert("Channel join verification coming soon ✅"); }
 
