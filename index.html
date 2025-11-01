@@ -5,7 +5,6 @@
   <title>DexBlast Mini App</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
 
   <!-- TON Connect UI -->
@@ -13,20 +12,46 @@
 </head>
 <body>
 
+  <!-- Dark/Light Toggle -->
   <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+
+  <!-- Connect Wallet Floating -->
+  <button id="connectWalletBtn" class="floating-btn">🔗 Connect Wallet</button>
 
   <div class="container">
     <h2>DexBlast Mini App</h2>
 
-    <!-- Wallet Section TON -->
+    <!-- Telegram Profile -->
+    <div class="profile-box">
+      <img id="userPic" src="assets/userpic.png" alt="User Pic">
+      <p id="userName">User</p>
+    </div>
+
+    <!-- Wallet Info -->
     <div class="wallet-box">
-      <button id="connectWalletBtn">Connect TON Wallet</button>
       <p id="walletAddress">Wallet: Not Connected</p>
       <p id="walletBalance">Balance: -- TON</p>
     </div>
+
+    <!-- Referral -->
+    <div class="referral-box">
+      <p>Your Referral Link:</p>
+      <input type="text" id="refLink" readonly>
+      <button onclick="copyReferral()">Copy</button>
+    </div>
+
+    <!-- Tasks -->
+    <div class="tasks-box">
+      <h3>Tasks</h3>
+      <button onclick="completeTask('joinChannel')">Join Channel (100 XP)</button>
+      <button onclick="completeTask('referral')">Referral Task (100 XP)</button>
+      <p>Level: <span id="userLevel">1</span></p>
+      <div class="xp-bar">
+        <div id="xpProgress" class="xp-fill"></div>
+      </div>
+    </div>
   </div>
 
-  <!-- script.js -->
   <script src="script.js"></script>
 </body>
 </html>
