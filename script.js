@@ -17,10 +17,15 @@ function toggleTheme() { document.body.classList.toggle("dark"); }
 
 // ---------------- Telegram Profile ----------------
 const tg = window.Telegram?.WebApp;
-if (tg?.initDataUnsafe?.user) {
-  const user = tg.initDataUnsafe.user;
-  document.getElementById("userName").innerText = user.first_name || user.username || "User";
-  if (user.photo_url) document.getElementById("userPic").src = user.photo_url;
+
+if(tg) {
+  tg.ready(); // حتما init کن
+  const user = tg.initDataUnsafe?.user || { first_name: "Test User", id: 123456, photo_url: "assets/userpic.png" };
+  document.getElementById("userName").innerText = user.first_name;
+  document.getElementById("userPic").src = user.photo_url;
+} else {
+  document.getElementById("userName").innerText = "Test User";
+  document.getElementById("userPic").src = "assets/userpic.png";
 }
 
 // ---------------- TON Connect ----------------
@@ -69,9 +74,8 @@ connectBtn.addEventListener("click", async () => {
       updateFromTonConnect();
     }
   } catch (err) { console.error("Connect button error:", err); alert("Wallet connection failed."); }
-}
+});
 
-);
 updateFromTonConnect();
 
 // ---------------- Referral ----------------
@@ -90,12 +94,11 @@ let userLevel = 1;
 
 function updateLevel() {
   document.getElementById("userLevel").innerText = userLevel;
-  const progress = Math.min(userXP, 500)/500*100; // level 2 threshold
+  const progress = Math.min(userXP, 500)/500*100;
   document.getElementById("xpProgress").style.width = `${progress}%`;
 }
 
 function completeTask(task) {
-  // all tasks +100 XP
   userXP += 100;
   if (userXP >= 500) userLevel = 2;
   updateLevel();
@@ -103,6 +106,7 @@ function completeTask(task) {
 }
 
 updateLevel();
+
 
 
 
