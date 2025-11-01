@@ -1,8 +1,7 @@
 // ======= script.js =======
-// DexBlast Mini App - TON Connect Real Integration
-// فقط اتصال واقعی TON Wallet، نمایش آدرس و موجودی
+// DexBlast Mini App - TON Connect + Referral + Tasks + Leveling
 
-// ---------------- Force refresh برای تلگرام ----------------
+// Force refresh تلگرام
 (function forceRefresh() {
   try {
     if (!window.location.search.includes("refresh=1")) {
@@ -13,82 +12,97 @@
   } catch (e) { console.warn(e); }
 })();
 
-// ---------------- Dark/Light toggle ----------------
-function toggleTheme() {
-  document.body.classList.toggle("dark");
+// Dark/Light toggle
+function toggleTheme() { document.body.classList.toggle("dark"); }
+
+// ---------------- Telegram Profile ----------------
+const tg = window.Telegram?.WebApp;
+if (tg?.initDataUnsafe?.user) {
+  const user = tg.initDataUnsafe.user;
+  document.getElementById("userName").innerText = user.first_name || user.username || "User";
+  if (user.photo_url) document.getElementById("userPic").src = user.photo_url;
 }
 
-// ---------------- TonConnect UI init ----------------
-if (!window.TON_CONNECT_UI) {
-  console.error("TON_CONNECT_UI not loaded. Check CDN script tag in <head>.");
-} else {
-  // create TonConnectUI instance
-  const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-    manifestUrl: "https://jamiltc.github.io/dexblast/tonconnect-manifest.json"
-  });
+// ---------------- TON Connect ----------------
+const tonConnectUI = window.TON_CONNECT_UI ? new TON_CONNECT_UI.TonConnectUI({
+  manifestUrl: "https://jamiltc.github.io/dexblast/tonconnect-manifest.json"
+}) : null;
 
-  // UI elements
-  const connectBtn = document.getElementById("connectWalletBtn");
-  const walletAddressEl = document.getElementById("walletAddress");
-  const walletBalanceEl = document.getElementById("walletBalance");
+const connectBtn = document.getElementById("connectWalletBtn");
+const walletAddressEl = document.getElementById("walletAddress");
+const walletBalanceEl = document.getElementById("walletBalance");
 
-  // ---------------- Helper: update UI ----------------
-  function updateFromTonConnect() {
-    try {
-      const connected = !!tonConnectUI.connected;
-      if (!connected) {
-        walletAddressEl.innerText = "Wallet: Not Connected";
-        walletBalanceEl.innerText = "Balance: -- TON";
-        connectBtn.innerText = "Connect Wallet";
-        return;
-      }
+async function fetchBalance(address) {
+  try {
+    const resp = await fetch(`https://toncenter.com/api/v2/getAddressInformation?address=${encodeURIComponent(address)}`);
+    const j = await resp.json();
+    if (j?.result?.balance !== undefined) return Number(j.result.balance);
+  } catch(e){ console.warn(e); }
+  return null;
+}
+
+function updateFromTonConnect() {
+  if (!tonConnectUI || !tonConnectUI.connected) {
+    walletAddressEl.innerText = "Wallet: Not Connected";
+    walletBalanceEl.innerText = "Balance: -- TON";
+    connectBtn.innerText = "Connect Wallet";
+    return;
+  }
+  const account = tonConnectUI.account;
+  if (account?.address) walletAddressEl.innerText = `Wallet: ${account.address}`;
+  connectBtn.innerText = "Disconnect Wallet";
+}
+
+connectBtn.addEventListener("click", async () => {
+  try {
+    if (!tonConnectUI.connected) {
+      await tonConnectUI.modal.open();
+      updateFromTonConnect();
       const account = tonConnectUI.account;
-      if (account?.address) walletAddressEl.innerText = `Wallet: ${account.address}`;
-      connectBtn.innerText = "Disconnect Wallet";
-    } catch (e) {
-      console.error("updateFromTonConnect error", e);
-    }
-  }
-
-  // ---------------- Helper: fetch balance ----------------
-  async function fetchBalance(address) {
-    try {
-      const resp = await fetch(`https://toncenter.com/api/v2/getAddressInformation?address=${encodeURIComponent(address)}`);
-      const j = await resp.json();
-      if (j && j.result && typeof j.result.balance !== "undefined") {
-        return Number(j.result.balance);
+      if (account?.address) {
+        walletAddressEl.innerText = `Wallet: ${account.address}`;
+        let balance = await fetchBalance(account.address);
+        walletBalanceEl.innerText = balance !== null ? `Balance: ${balance/1e9} TON` : "Balance: unknown";
       }
-    } catch (e) { console.warn("fetchBalance error", e); }
-    return null;
-  }
-
-  // ---------------- Connect / Disconnect ----------------
-  connectBtn.addEventListener("click", async () => {
-    try {
-      if (!tonConnectUI.connected) {
-        await tonConnectUI.modal.open();
-        updateFromTonConnect();
-
-        const account = tonConnectUI.account;
-        if (account?.address) {
-          walletAddressEl.innerText = `Wallet: ${account.address}`;
-          let balance = await fetchBalance(account.address);
-          if (balance !== null) walletBalanceEl.innerText = `Balance: ${balance / 1e9} TON`;
-          else walletBalanceEl.innerText = "Balance: unknown";
-        }
-      } else {
-        await tonConnectUI.disconnect();
-        updateFromTonConnect();
-      }
-    } catch (err) {
-      console.error("Connect button error:", err);
-      alert("Wallet connection failed. Check console for details.");
+    } else {
+      await tonConnectUI.disconnect();
+      updateFromTonConnect();
     }
-  });
-
-  // initial UI sync
-  updateFromTonConnect();
+  } catch (err) { console.error("Connect button error:", err); alert("Wallet connection failed."); }
 }
+
+);
+updateFromTonConnect();
+
+// ---------------- Referral ----------------
+const refInput = document.getElementById("refLink");
+const userId = tg?.initDataUnsafe?.user?.id || Math.floor(Math.random()*1000000); // fallback
+refInput.value = `https://t.me/DexBlastBot?start=${userId}`;
+
+function copyReferral() {
+  navigator.clipboard.writeText(refInput.value);
+  alert("Referral link copied ✅");
+}
+
+// ---------------- Tasks + XP ----------------
+let userXP = 0;
+let userLevel = 1;
+
+function updateLevel() {
+  document.getElementById("userLevel").innerText = userLevel;
+  const progress = Math.min(userXP, 500)/500*100; // level 2 threshold
+  document.getElementById("xpProgress").style.width = `${progress}%`;
+}
+
+function completeTask(task) {
+  // all tasks +100 XP
+  userXP += 100;
+  if (userXP >= 500) userLevel = 2;
+  updateLevel();
+  alert(`Task "${task}" completed! +100 XP`);
+}
+
+updateLevel();
 
 
 
