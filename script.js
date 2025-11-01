@@ -1,3 +1,7 @@
+// ======= script.js =======
+// DexBlast Mini App - TON Connect Real Integration
+// فقط اتصال واقعی TON Wallet، نمایش آدرس و موجودی
+
 // ---------------- Force refresh برای تلگرام ----------------
 (function forceRefresh() {
   try {
@@ -18,14 +22,17 @@ function toggleTheme() {
 if (!window.TON_CONNECT_UI) {
   console.error("TON_CONNECT_UI not loaded. Check CDN script tag in <head>.");
 } else {
+  // create TonConnectUI instance
   const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
     manifestUrl: "https://jamiltc.github.io/dexblast/tonconnect-manifest.json"
   });
 
+  // UI elements
   const connectBtn = document.getElementById("connectWalletBtn");
   const walletAddressEl = document.getElementById("walletAddress");
   const walletBalanceEl = document.getElementById("walletBalance");
 
+  // ---------------- Helper: update UI ----------------
   function updateFromTonConnect() {
     try {
       const connected = !!tonConnectUI.connected;
@@ -43,6 +50,7 @@ if (!window.TON_CONNECT_UI) {
     }
   }
 
+  // ---------------- Helper: fetch balance ----------------
   async function fetchBalance(address) {
     try {
       const resp = await fetch(`https://toncenter.com/api/v2/getAddressInformation?address=${encodeURIComponent(address)}`);
@@ -54,6 +62,7 @@ if (!window.TON_CONNECT_UI) {
     return null;
   }
 
+  // ---------------- Connect / Disconnect ----------------
   connectBtn.addEventListener("click", async () => {
     try {
       if (!tonConnectUI.connected) {
@@ -77,6 +86,7 @@ if (!window.TON_CONNECT_UI) {
     }
   });
 
+  // initial UI sync
   updateFromTonConnect();
 }
 
