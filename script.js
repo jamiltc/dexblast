@@ -1,6 +1,8 @@
-// =============== DexBlast Script.js ===============
+// =====================================================
+// 🟡 DexBlast Mini App - Real Telegram + TON Connect
+// =====================================================
 
-// Splash screen fade out after 2.5 seconds
+// ✅ Splash Screen: fade out after 2.5s
 window.addEventListener("load", () => {
   setTimeout(() => {
     document.getElementById("splash").style.display = "none";
@@ -8,41 +10,81 @@ window.addEventListener("load", () => {
   }, 2500);
 });
 
-// Dark mode toggle
+// ✅ Dark Mode Toggle
 function toggleTheme() {
   document.body.classList.toggle("dark");
 }
 
-// Telegram WebApp data
-const tg = window.Telegram?.WebApp;
-let userData = { first_name: "Guest", photo_url: "assets/userpic.png", id: null };
+// ✅ Refresh Button
+document.getElementById("refreshBtn").addEventListener("click", () => {
+  location.reload();
+});
 
-if (tg && tg.initDataUnsafe?.user) {
-  tg.ready();
-  const u = tg.initDataUnsafe.user;
-  userData = u;
-  document.getElementById("userName").innerText = u.first_name || u.username || "User";
-  if (u.photo_url) document.getElementById("userPic").src = u.photo_url;
+// =====================================================
+// 🟢 Telegram Connection (Real)
+// =====================================================
+const tg = window.Telegram?.WebApp;
+let userData = null;
+const API_BASE = "https://YOUR_BACKEND_URL_HERE"; // ← تغییر بده بعد از دیپلوی سرور
+
+if (tg) {
+  try {
+    tg.ready();
+
+    if (tg.initDataUnsafe?.user) {
+      userData = tg.initDataUnsafe.user;
+      console.log("✅ Telegram user:", userData);
+
+      const name = userData.first_name + (userData.last_name ? " " + userData.last_name : "");
+      document.getElementById("userName").innerText = name || userData.username;
+      if (userData.photo_url) document.getElementById("userPic").src = userData.photo_url;
+
+      // 📡 Register user in backend
+      fetch(`${API_BASE}/api/users/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          telegramId: userData.id,
+          username: userData.username,
+          photo: userData.photo_url
+        })
+      })
+        .then(res => res.json())
+        .then(r => console.log("🟢 User registered:", r))
+        .catch(e => console.error("Register error:", e));
+    } else {
+      console.warn("⚠️ No Telegram user found. Must open from Telegram.");
+      showGuest();
+    }
+  } catch (err) {
+    console.error("Telegram init error:", err);
+    showGuest();
+  }
 } else {
-  document.getElementById("userName").innerText = "Guest";
+  console.warn("⚠️ Telegram WebApp not found");
+  showGuest();
+}
+
+function showGuest() {
+  document.getElementById("userName").innerText = "Guest User";
   document.getElementById("userPic").src = "assets/userpic.png";
 }
 
-// Referral link
+// =====================================================
+// 🔗 Referral System (Local + Copy)
+// =====================================================
 const refInput = document.getElementById("refLink");
-const userId = userData.id || Math.floor(Math.random() * 1000000);
+const userId = userData?.id || Math.floor(Math.random() * 1000000);
 refInput.value = `https://t.me/DexBlastBot?start=${userId}`;
+
 function copyReferral() {
   navigator.clipboard.writeText(refInput.value);
   alert("Referral link copied ✅");
 }
 
-// Refresh button
-document.getElementById("refreshBtn").addEventListener("click", () => {
-  location.reload();
-});
-
-// TON Connect
+// =====================================================
+// 💰 TON Connect Integration (Connect / Disconnect)
+// =====================================================
 if (!window.TON_CONNECT_UI) {
   console.error("TON Connect UI not loaded!");
 } else {
@@ -61,16 +103,31 @@ if (!window.TON_CONNECT_UI) {
       if (j.result && j.result.balance) {
         return (Number(j.result.balance) / 1e9).toFixed(3);
       }
-    } catch (err) { console.log(err); }
+    } catch (err) {
+      console.log("Balance error:", err);
+    }
     return "--";
   }
 
-  function updateUI() {
+  function updateWalletUI() {
     if (tonConnectUI.connected && tonConnectUI.account?.address) {
       const addr = tonConnectUI.account.address;
       walletAddressEl.innerText = `Wallet: ${addr}`;
       connectBtn.innerText = "❌ Disconnect Wallet";
-      getBalance(addr).then(b => walletBalanceEl.innerText = `Balance: ${b} TON`);
+
+      // fetch live balance
+      getBalance(addr).then(b => {
+        walletBalanceEl.innerText = `Balance: ${b} TON`;
+      });
+
+      // register wallet in backend
+      if (userData?.id && API_BASE) {
+        fetch(`${API_BASE}/api/users/connect-wallet`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: userData.id, wallet: addr })
+        }).catch(() => {});
+      }
     } else {
       walletAddressEl.innerText = "Wallet: Not Connected";
       walletBalanceEl.innerText = "Balance: -- TON";
@@ -81,16 +138,25 @@ if (!window.TON_CONNECT_UI) {
   connectBtn.addEventListener("click", async () => {
     if (!tonConnectUI.connected) {
       await tonConnectUI.modal.open();
-      updateUI();
+      updateWalletUI();
     } else {
       await tonConnectUI.disconnect();
-      updateUI();
+      updateWalletUI();
     }
   });
 
-  updateUI();
+  updateWalletUI();
 }
 
+// =====================================================
+// ✅ Responsive helper (auto fit page on any device)
+// =====================================================
+function fitScreen() {
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty("--vh", `${vh}px`);
+}
+fitScreen();
+window.addEventListener("resize", fitScreen);
 
 
 
