@@ -1,40 +1,123 @@
-/* reset base */
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial, sans-serif;background:#ffe585;min-height:100vh;color:#222}
-
-/* dark theme */
-body.dark{background:#111;color:#eee}
-
-/* floating buttons */
-.theme-toggle{position:fixed;top:16px;right:20px;padding:8px;border-radius:10px;background:rgba(255,255,255,0.25);backdrop-filter:blur(8px);cursor:pointer;z-index:1000}
-.floating-btn{position:fixed;top:12px;right:92px;padding:8px 14px;border-radius:12px;border:none;background:rgba(255,255,255,0.25);backdrop-filter:blur(8px);cursor:pointer;z-index:1000}
-
-/* container */
-.container{max-width:420px;margin:100px auto;padding:22px;border-radius:16px;background:rgba(255,255,255,0.28);backdrop-filter:blur(12px);text-align:center}
-
-/* profile */
-.profile-box img{width:74px;height:74px;border-radius:50%;object-fit:cover}
-.profile-box p{margin-top:8px;font-weight:600}
-
-/* wallet */
-.wallet-box{margin:18px 0}
-
-/* referral */
-.referral-box{margin:18px 0;display:flex;gap:6px;align-items:center;justify-content:center}
-.referral-box input{width:70%;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.12)}
-.referral-box button{padding:8px 10px;border-radius:8px;border:none;background:#222;color:#fff;cursor:pointer}
-
-/* tasks */
-.tasks-box{margin-top:14px}
-.task-btn{margin:6px;padding:10px 12px;border-radius:10px;border:none;background:#222;color:#fff;cursor:pointer}
-.xp-bar{width:100%;height:12px;background:rgba(0,0,0,0.08);border-radius:8px;margin-top:8px}
-.xp-fill{width:0%;height:100%;background:#00b894;border-radius:8px;transition:width .3s}
-
-/* responsive */
-@media (max-width:420px){
-  .container{margin:80px 12px;padding:18px}
-  .floating-btn{right:84px}
+body {
+  font-family: Arial, sans-serif;
+  background: #ffe585;
+  margin: 0;
+  padding: 0;
+  color: #333;
+  overflow-x: hidden;
 }
 
+/* Dark Theme */
+body.dark {
+  background: #222;
+  color: #eee;
+}
+
+/* Splash Screen */
+#splash {
+  position: fixed;
+  inset: 0;
+  background: #ffe585;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+#splash img {
+  width: 120px;
+  animation: bounce 1.5s infinite ease-in-out;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Floating Buttons */
+.theme-toggle, .floating-btn {
+  position: fixed;
+  top: 20px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  background: rgba(255,255,255,0.25);
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+}
+.theme-toggle { right: 20px; }
+.floating-btn { right: 90px; border: none; font-size: 14px; }
+
+/* Container */
+.container {
+  max-width: 420px;
+  margin: 100px auto;
+  padding: 20px;
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+.hidden { display: none; }
+
+/* Profile */
+.profile-box img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+.profile-box p {
+  margin-top: 8px;
+  font-weight: bold;
+}
+
+/* Wallet */
+.wallet-box {
+  margin: 20px 0;
+}
+
+/* Referral */
+.referral-box {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
+  margin: 15px 0;
+}
+.referral-box input {
+  width: 70%;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+.referral-box button {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: none;
+  background: #222;
+  color: #fff;
+  cursor: pointer;
+}
+
+/* Refresh */
+.refresh-bar {
+  margin-top: 20px;
+}
+#refreshBtn {
+  padding: 8px 14px;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width:480px){
+  .container { margin: 80px 16px; padding: 16px; }
+  .floating-btn { right: 82px; padding: 8px 10px; }
+}
 
 
