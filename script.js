@@ -1,7 +1,11 @@
-// ======= script.js =======
-// DexBlast Mini App - TON Connect + Referral + Tasks + Leveling
+// ===== script.js =====
+// DexBlast Mini App - frontend (TON Connect + Telegram profile + Referral + Tasks)
 
-// Force refresh تلگرام
+// -------------- CONFIG --------------
+const API_BASE = "https://YOUR_BACKEND_URL_HERE"; // <-- بعدا ست کن (مث: https://dexblast-api.example)
+const BOT_USERNAME = "DexBlastBot"; // just for reference
+
+// -------------- Force refresh (to avoid Telegram cached old JS) --------------
 (function forceRefresh() {
   try {
     if (!window.location.search.includes("refresh=1")) {
@@ -9,105 +13,154 @@
       window.location.replace(window.location.href + sep + "refresh=1");
       return;
     }
-  } catch (e) { console.warn(e); }
+  } catch (e) { console.warn("forceRefresh:", e); }
 })();
 
-// Dark/Light toggle
-function toggleTheme() { document.body.classList.toggle("dark"); }
+// -------------- UI helpers --------------
+function $(id){ return document.getElementById(id); }
+function setText(id, txt){ const el=$(id); if(el) el.innerText = txt; }
 
-// ---------------- Telegram Profile ----------------
+// -------------- Theme --------------
+function toggleTheme(){ document.body.classList.toggle("dark"); }
+document.querySelector(".theme-toggle").addEventListener("click", toggleTheme);
+
+// -------------- Telegram WebApp init & user --------------
 const tg = window.Telegram?.WebApp;
-
-if(tg) {
-  tg.ready(); // حتما init کن
-  const user = tg.initDataUnsafe?.user || { first_name: "Test User", id: 123456, photo_url: "assets/userpic.png" };
-  document.getElementById("userName").innerText = user.first_name;
-  document.getElementById("userPic").src = user.photo_url;
-} else {
-  document.getElementById("userName").innerText = "Test User";
-  document.getElementById("userPic").src = "assets/userpic.png";
+let telegramUser = null;
+if (tg) {
+  try { tg.ready(); } catch(e){/*ignore*/ }
+  telegramUser = tg.initDataUnsafe?.user;
 }
+if (!telegramUser) {
+  // fallback for browser test
+  telegramUser = { id: null, first_name: "Guest", username: null, photo_url: "assets/userpic.png" };
+}
+setText("userName", telegramUser.first_name || telegramUser.username || "User");
+const userPicEl = $("userPic");
+if (telegramUser.photo_url) userPicEl.src = telegramUser.photo_url;
 
-// ---------------- TON Connect ----------------
-const tonConnectUI = window.TON_CONNECT_UI ? new TON_CONNECT_UI.TonConnectUI({
-  manifestUrl: "https://jamiltc.github.io/dexblast/tonconnect-manifest.json"
-}) : null;
+// -------------- Referral initial value --------------
+const refInput = $("refLink");
+const userId = telegramUser?.id || `guest_${Math.floor(Math.random()*1000000)}`;
+refInput.value = `https://t.me/${BOT_USERNAME}?start=${userId}`;
 
-const connectBtn = document.getElementById("connectWalletBtn");
-const walletAddressEl = document.getElementById("walletAddress");
-const walletBalanceEl = document.getElementById("walletBalance");
-
-async function fetchBalance(address) {
+// copy referral
+$("copyRefBtn").addEventListener("click", async () => {
   try {
-    const resp = await fetch(`https://toncenter.com/api/v2/getAddressInformation?address=${encodeURIComponent(address)}`);
-    const j = await resp.json();
-    if (j?.result?.balance !== undefined) return Number(j.result.balance);
-  } catch(e){ console.warn(e); }
-  return null;
-}
-
-function updateFromTonConnect() {
-  if (!tonConnectUI || !tonConnectUI.connected) {
-    walletAddressEl.innerText = "Wallet: Not Connected";
-    walletBalanceEl.innerText = "Balance: -- TON";
-    connectBtn.innerText = "Connect Wallet";
-    return;
-  }
-  const account = tonConnectUI.account;
-  if (account?.address) walletAddressEl.innerText = `Wallet: ${account.address}`;
-  connectBtn.innerText = "Disconnect Wallet";
-}
-
-connectBtn.addEventListener("click", async () => {
-  try {
-    if (!tonConnectUI.connected) {
-      await tonConnectUI.modal.open();
-      updateFromTonConnect();
-      const account = tonConnectUI.account;
-      if (account?.address) {
-        walletAddressEl.innerText = `Wallet: ${account.address}`;
-        let balance = await fetchBalance(account.address);
-        walletBalanceEl.innerText = balance !== null ? `Balance: ${balance/1e9} TON` : "Balance: unknown";
-      }
-    } else {
-      await tonConnectUI.disconnect();
-      updateFromTonConnect();
+    await navigator.clipboard.writeText(refInput.value);
+    alert("Referral link copied ✅");
+    // register click with backend (optional)
+    if (API_BASE && telegramUser?.id) {
+      fetch(`${API_BASE}/api/referral/register`, {
+        method: "POST",
+        headers:{ "Content-Type":"application/json"},
+        body: JSON.stringify({ userId: telegramUser.id, action: "copy" })
+      }).catch(()=>{/*non-blocking*/});
     }
-  } catch (err) { console.error("Connect button error:", err); alert("Wallet connection failed."); }
+  } catch(e){ alert("Copy failed"); }
 });
 
-updateFromTonConnect();
-
-// ---------------- Referral ----------------
-const refInput = document.getElementById("refLink");
-const userId = tg?.initDataUnsafe?.user?.id || Math.floor(Math.random()*1000000); // fallback
-refInput.value = `https://t.me/DexBlastBot?start=${userId}`;
-
-function copyReferral() {
-  navigator.clipboard.writeText(refInput.value);
-  alert("Referral link copied ✅");
-}
-
-// ---------------- Tasks + XP ----------------
-let userXP = 0;
-let userLevel = 1;
-
-function updateLevel() {
-  document.getElementById("userLevel").innerText = userLevel;
+// -------------- XP / Level UI --------------
+let userXP = 0, userLevel = 1;
+function updateXPUI(){
+  setText("userLevel", userLevel);
   const progress = Math.min(userXP, 500)/500*100;
-  document.getElementById("xpProgress").style.width = `${progress}%`;
+  const xpFill = $("xpProgress");
+  if(xpFill) xpFill.style.width = `${progress}%`;
 }
+updateXPUI();
 
-function completeTask(task) {
-  userXP += 100;
-  if (userXP >= 500) userLevel = 2;
-  updateLevel();
-  alert(`Task "${task}" completed! +100 XP`);
+// -------------- tasks buttons (calls backend to register completion) --------------
+document.querySelectorAll(".task-btn").forEach(btn=>{
+  btn.addEventListener("click", async (e)=>{
+    const task = btn.dataset.task;
+    // optimistic UI: add XP locally first
+    userXP += 100;
+    if(userXP >= 500 && userLevel==1){ userLevel = 2; userXP = userXP-500; } // simple leveling
+    updateXPUI();
+
+    // call backend to record task (if API available)
+    if(API_BASE && telegramUser?.id){
+      try {
+        await fetch(`${API_BASE}/api/tasks/complete`, {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ userId: telegramUser.id, task })
+        });
+      } catch(err){
+        console.warn("task API error", err);
+      }
+    }
+
+    alert(`Task ${task} completed (+100 XP)`);
+  });
+});
+
+// -------------- TON Connect init --------------
+if (!window.TON_CONNECT_UI) {
+  console.error("TON_CONNECT_UI not loaded - check CDN script tag");
+} else {
+  const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+    manifestUrl: "https://jamiltc.github.io/dexblast/tonconnect-manifest.json"
+  });
+
+  const connectBtn = $("connectWalletBtn");
+  const walletAddressEl = $("walletAddress");
+  const walletBalanceEl = $("walletBalance");
+
+  // helper to update
+  function syncUIFromTon(){
+    if(!tonConnectUI || !tonConnectUI.connected){
+      walletAddressEl.innerText = "Wallet: Not Connected";
+      walletBalanceEl.innerText = "Balance: -- TON";
+      connectBtn.innerText = "🔗 Connect Wallet";
+      return;
+    }
+    const account = tonConnectUI.account;
+    if(account?.address) walletAddressEl.innerText = `Wallet: ${account.address}`;
+    connectBtn.innerText = "Disconnect Wallet";
+  }
+
+  async function fetchBalance(address){
+    try {
+      const r = await fetch(`https://toncenter.com/api/v2/getAddressInformation?address=${encodeURIComponent(address)}`);
+      const j = await r.json();
+      if(j?.result?.balance !== undefined) return Number(j.result.balance);
+    } catch(e){ console.warn("balance fetch err", e); }
+    return null;
+  }
+
+  connectBtn.addEventListener("click", async ()=>{
+    try {
+      if(!tonConnectUI.connected){
+        await tonConnectUI.modal.open();
+        syncUIFromTon();
+        const addr = tonConnectUI.account?.address;
+        if(addr){
+          const balance = await fetchBalance(addr);
+          walletBalanceEl.innerText = balance !== null ? `Balance: ${balance/1e9} TON` : "Balance: unknown";
+
+          // register wallet on backend
+          if(API_BASE && telegramUser?.id){
+            fetch(`${API_BASE}/api/users/connect-wallet`, {
+              method:"POST",
+              headers:{"Content-Type":"application/json"},
+              body: JSON.stringify({ userId: telegramUser.id, wallet: addr })
+            }).catch(()=>{});
+          }
+        }
+      } else {
+        await tonConnectUI.disconnect();
+        syncUIFromTon();
+      }
+    } catch(err){
+      console.error("connect error", err);
+      alert("Wallet connection failed");
+    }
+  });
+
+  syncUIFromTon();
 }
-
-updateLevel();
-
-
 
 
 
