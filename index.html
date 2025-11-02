@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
   <title>DexBlast Mini App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="style.css">
-
-  <!-- TON Connect UI (CDN) -->
   <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 </head>
 <body>
+
+  <!-- Splash Screen -->
+  <div id="splash">
+    <img src="assets/egg.gif" alt="DexBlast Egg">
+    <p>Loading...</p>
+  </div>
 
   <!-- Dark/Light Toggle -->
   <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
@@ -18,13 +22,14 @@
   <!-- Connect Wallet Floating -->
   <button id="connectWalletBtn" class="floating-btn">🔗 Connect Wallet</button>
 
-  <div class="container">
+  <!-- Main Container -->
+  <div id="mainContent" class="container hidden">
     <h2>DexBlast Mini App</h2>
 
     <!-- Telegram Profile -->
     <div class="profile-box">
       <img id="userPic" src="assets/userpic.png" alt="User Pic">
-      <p id="userName">User</p>
+      <p id="userName">Guest</p>
     </div>
 
     <!-- Wallet Info -->
@@ -37,25 +42,18 @@
     <div class="referral-box">
       <p>Your Referral Link:</p>
       <input type="text" id="refLink" readonly>
-      <button id="copyRefBtn">Copy</button>
+      <button onclick="copyReferral()">Copy</button>
     </div>
 
-    <!-- Tasks -->
-    <div class="tasks-box">
-      <h3>Tasks</h3>
-      <button class="task-btn" data-task="joinChannel">Join Channel (100 XP)</button>
-      <button class="task-btn" data-task="referral">Referral Task (100 XP)</button>
-      <p>Level: <span id="userLevel">1</span></p>
-      <div class="xp-bar">
-        <div id="xpProgress" class="xp-fill"></div>
-      </div>
+    <!-- Refresh -->
+    <div class="refresh-bar">
+      <button id="refreshBtn">🔄 Refresh</button>
     </div>
   </div>
 
   <script src="script.js"></script>
 </body>
 </html>
-
 
 
 
