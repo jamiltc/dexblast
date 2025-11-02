@@ -1,60 +1,185 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>DexBlast Mini App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="style.css">
+  <!-- Telegram Mini App SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- TonConnect UI (renders the wallet button) -->
   <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="bg-egg"></div>
 
-  <!-- Splash Screen -->
-  <div id="splash">
-    <img src="assets/egg.gif" alt="DexBlast Egg">
-    <p>Loading...</p>
-  </div>
+  <main class="shell">
+    <!-- top bar -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>DexBlast</h1>
+      </div>
+      <div class="actions">
+        <button id="themeToggle" class="ghost-btn" aria-label="Toggle theme">🌙</button>
+        <!-- TonConnect UI will mount its button into this div -->
+        <div id="ton-connect"></div>
+      </div>
+    </header>
 
-  <!-- Dark/Light Toggle -->
-  <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+    <!-- glass panel -->
+    <section class="glass">
+      <div class="profile">
+        <img id="userPhoto" class="avatar" alt="avatar" />
+        <div class="who">
+          <div id="userName" class="name">Guest</div>
+          <div id="userHandle" class="handle">@guest</div>
+        </div>
+        <div class="wallet">
+          <div class="lbl">Wallet</div>
+          <div id="walletAddr" class="mono">—</div>
+          <div id="walletBal" class="mono small">Balance: —</div>
+        </div>
+      </div>
 
-  <!-- Connect Wallet Floating -->
-  <button id="connectWalletBtn" class="floating-btn">🔗 Connect Wallet</button>
+      <div class="grid">
+        <div class="card soon">
+          <h3>Tasks</h3>
+          <p>Coming soon…</p>
+        </div>
+        <div class="card soon">
+          <h3>Referral</h3>
+          <p>Coming soon…</p>
+        </div>
+      </div>
+    </section>
 
-  <!-- Main Container -->
-  <div id="mainContent" class="container hidden">
-    <h2>DexBlast Mini App</h2>
+    <footer class="foot">
+      <span>© DexBlast</span>
+    </footer>
+  </main>
 
-    <!-- Telegram Profile -->
-    <div class="profile-box">
-      <img id="userPic" src="assets/userpic.png" alt="User Pic">
-      <p id="userName">Guest</p>
-    </div>
+  <script>
+    // ===== config =====
+    // اگر بعداً بک‌اند داشتی اینجا آدرس بده؛ فعلاً خالی می‌ماند.
+    const API_BASE = ""; // e.g. "https://dexblast-api.onrender.com"
 
-    <!-- Wallet Info -->
-    <div class="wallet-box">
-      <p id="walletAddress">Wallet: Not Connected</p>
-      <p id="walletBalance">Balance: -- TON</p>
-    </div>
+    // ===== theme toggle =====
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const savedTheme = localStorage.getItem('db_theme') || 'light';
+    html.setAttribute('data-theme', savedTheme);
+    themeToggle.textContent = savedTheme === 'light' ? '🌙' : '☀️';
+    themeToggle.onclick = () => {
+      const now = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      html.setAttribute('data-theme', now);
+      localStorage.setItem('db_theme', now);
+      themeToggle.textContent = now === 'light' ? '🌙' : '☀️';
+    };
 
-    <!-- Referral -->
-    <div class="referral-box">
-      <p>Your Referral Link:</p>
-      <input type="text" id="refLink" readonly>
-      <button onclick="copyReferral()">Copy</button>
-    </div>
+    // ===== Telegram user info =====
+    const tg = window.Telegram?.WebApp;
+    try {
+      tg?.ready();
+      tg?.expand();
+    } catch(e){}
 
-    <!-- Refresh -->
-    <div class="refresh-bar">
-      <button id="refreshBtn">🔄 Refresh</button>
-    </div>
-  </div>
+    const u = tg?.initDataUnsafe?.user || null;
+    const nameEl = document.getElementById('userName');
+    const handleEl = document.getElementById('userHandle');
+    const photoEl = document.getElementById('userPhoto');
 
-  <script src="script.js"></script>
+    function setAvatarFallback(username) {
+      // fallback آواتار: اگر photo_url نبود
+      photoEl.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username || 'guest')}`;
+    }
+
+    if (u) {
+      const fullName = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username || 'User';
+      nameEl.textContent = fullName;
+      handleEl.textContent = u.username ? '@' + u.username : 'ID: ' + u.id;
+      if (u.photo_url) {
+        photoEl.src = u.photo_url;
+      } else {
+        setAvatarFallback(u.username || String(u.id));
+      }
+    } else {
+      nameEl.textContent = 'Guest';
+      handleEl.textContent = '@guest';
+      setAvatarFallback('guest');
+    }
+
+    // ===== TonConnect UI (real connect) =====
+    const tonConnectUI = new TONCONNECTUI.TonConnectUI({
+      manifestUrl: location.origin + '/tonconnect-manifest.json',
+      buttonRootId: 'ton-connect',
+      uiPreferences: { theme: savedTheme === 'dark' ? 'DARK' : 'LIGHT' }
+    });
+
+    // همگام‌سازی تم TonConnect با تم خودمان
+    const syncTonTheme = () => {
+      tonConnectUI.uiOptions = { theme: html.getAttribute('data-theme') === 'dark' ? 'DARK' : 'LIGHT' };
+    };
+    themeToggle.addEventListener('click', syncTonTheme);
+
+    const walletAddrEl = document.getElementById('walletAddr');
+    const walletBalEl  = document.getElementById('walletBal');
+
+    async function fetchTonBalance(friendlyAddr) {
+      try {
+        // استفاده از public toncenter (بدون کلید؛ برای تست خوبه)
+        const body = {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "getAddressBalance",
+          params: [friendlyAddr]
+        };
+        const res = await fetch('https://toncenter.com/api/v2/jsonRPC', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (data?.result) {
+          const nano = BigInt(data.result);
+          const tons = Number(nano) / 1e9;
+          walletBalEl.textContent = 'Balance: ' + tons.toFixed(4) + ' TON';
+        } else {
+          walletBalEl.textContent = 'Balance: —';
+        }
+      } catch (e) {
+        walletBalEl.textContent = 'Balance: —';
+      }
+    }
+
+    async function onWalletChange() {
+      const acc = tonConnectUI.account;
+      if (acc && acc.address) {
+        walletAddrEl.textContent = acc.address.slice(0, 6) + '…' + acc.address.slice(-6);
+        walletAddrEl.title = acc.address;
+        fetchTonBalance(acc.address);
+        // اگر بک‌اند داری، می‌توانی اینجا ثبت اتصال را صدا بزنی:
+        // if (API_BASE && u?.id) {
+        //   fetch(API_BASE + '/api/users/connect-wallet', {
+        //     method: 'POST', headers: {'Content-Type':'application/json'},
+        //     body: JSON.stringify({ userId: String(u.id), wallet: acc.address })
+        //   });
+        // }
+      } else {
+        walletAddrEl.textContent = '—';
+        walletBalEl.textContent  = 'Balance: —';
+      }
+    }
+
+    tonConnectUI.onStatusChange(onWalletChange);
+    onWalletChange(); // بار اول
+
+  </script>
 </body>
 </html>
-
 
 
 
