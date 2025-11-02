@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>DexBlast Mini App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link rel="stylesheet" href="style.css">
 
-  <!-- TON Connect UI -->
+  <!-- TON Connect UI (CDN) -->
   <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 </head>
 <body>
@@ -37,14 +37,14 @@
     <div class="referral-box">
       <p>Your Referral Link:</p>
       <input type="text" id="refLink" readonly>
-      <button onclick="copyReferral()">Copy</button>
+      <button id="copyRefBtn">Copy</button>
     </div>
 
     <!-- Tasks -->
     <div class="tasks-box">
       <h3>Tasks</h3>
-      <button onclick="completeTask('joinChannel')">Join Channel (100 XP)</button>
-      <button onclick="completeTask('referral')">Referral Task (100 XP)</button>
+      <button class="task-btn" data-task="joinChannel">Join Channel (100 XP)</button>
+      <button class="task-btn" data-task="referral">Referral Task (100 XP)</button>
       <p>Level: <span id="userLevel">1</span></p>
       <div class="xp-bar">
         <div id="xpProgress" class="xp-fill"></div>
@@ -55,6 +55,7 @@
   <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
