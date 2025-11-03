@@ -1,185 +1,71 @@
-<!doctype html>
-<html lang="en" data-theme="light">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DexBlast Mini App</title>
-
-  <!-- Telegram Mini App SDK -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-  <!-- TonConnect UI (renders the wallet button) -->
-  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="bg-egg"></div>
 
-  <main class="shell">
-    <!-- top bar -->
-    <header class="topbar">
-      <div class="brand">
-        <span class="dot"></span>
-        <h1>DexBlast</h1>
-      </div>
-      <div class="actions">
-        <button id="themeToggle" class="ghost-btn" aria-label="Toggle theme">🌙</button>
-        <!-- TonConnect UI will mount its button into this div -->
-        <div id="ton-connect"></div>
-      </div>
-    </header>
+  <div class="glass-panel">
+    <div class="top-bar">
+      <!-- Telegram Login Widget -->
+<script async src="https://telegram.org/js/telegram-widget.js?19"
+        data-telegram-login="dexblast_bot"
+        data-size="large"
+        data-radius="8"
+        data-userpic="true"
+        data-request-access="write"
+        data-onauth="onTelegramAuth(user)">
+</script>
 
-    <!-- glass panel -->
-    <section class="glass">
-      <div class="profile">
-        <img id="userPhoto" class="avatar" alt="avatar" />
-        <div class="who">
-          <div id="userName" class="name">Guest</div>
-          <div id="userHandle" class="handle">@guest</div>
-        </div>
-        <div class="wallet">
-          <div class="lbl">Wallet</div>
-          <div id="walletAddr" class="mono">—</div>
-          <div id="walletBal" class="mono small">Balance: —</div>
-        </div>
-      </div>
+<script>
+  function onTelegramAuth(user) {
+    console.log('✅ Telegram user data:', user);
 
-      <div class="grid">
-        <div class="card soon">
-          <h3>Tasks</h3>
-          <p>Coming soon…</p>
-        </div>
-        <div class="card soon">
-          <h3>Referral</h3>
-          <p>Coming soon…</p>
-        </div>
-      </div>
-    </section>
+    // ارسال داده کاربر تلگرام به سرور اصلی
+    fetch("https://YOUR_BACKEND_URL/api/telegram-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: user.id,
+        username: user.username,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        photo_url: user.photo_url,
+        auth_date: user.auth_date,
+        hash: user.hash
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Server response:", data);
+      // ذخیره اطلاعات کاربر در مرورگر
+      localStorage.setItem("tg_user", JSON.stringify(user));
+      location.reload(); // رفرش برای نمایش پروفایل
+    })
+    .catch(err => console.error("❌ Error sending data:", err));
+  }
+</script>
 
-    <footer class="foot">
-      <span>© DexBlast</span>
-    </footer>
-  </main>
+      <button id="theme-toggle">🌞</button>
+      <button id="connect-wallet">Connect Wallet</button>
+    </div>
 
-  <script>
-    // ===== config =====
-    // اگر بعداً بک‌اند داشتی اینجا آدرس بده؛ فعلاً خالی می‌ماند.
-    const API_BASE = ""; // e.g. "https://dexblast-api.onrender.com"
+    <div class="profile">
+      <img id="profile-pic" src="https://i.ibb.co/9vZf0cW/default-avatar.png" alt="profile" />
+      <h2 id="username">Guest</h2>
+    </div>
 
-    // ===== theme toggle =====
-    const html = document.documentElement;
-    const themeToggle = document.getElementById('themeToggle');
-    const savedTheme = localStorage.getItem('db_theme') || 'light';
-    html.setAttribute('data-theme', savedTheme);
-    themeToggle.textContent = savedTheme === 'light' ? '🌙' : '☀️';
-    themeToggle.onclick = () => {
-      const now = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-      html.setAttribute('data-theme', now);
-      localStorage.setItem('db_theme', now);
-      themeToggle.textContent = now === 'light' ? '🌙' : '☀️';
-    };
+    <div class="coming-soon">
+      <h3>🎯 Tasks – Coming Soon</h3>
+      <h3>🤝 Referrals – Coming Soon</h3>
+    </div>
+  </div>
 
-    // ===== Telegram user info =====
-    const tg = window.Telegram?.WebApp;
-    try {
-      tg?.ready();
-      tg?.expand();
-    } catch(e){}
-
-    const u = tg?.initDataUnsafe?.user || null;
-    const nameEl = document.getElementById('userName');
-    const handleEl = document.getElementById('userHandle');
-    const photoEl = document.getElementById('userPhoto');
-
-    function setAvatarFallback(username) {
-      // fallback آواتار: اگر photo_url نبود
-      photoEl.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(username || 'guest')}`;
-    }
-
-    if (u) {
-      const fullName = [u.first_name, u.last_name].filter(Boolean).join(' ') || u.username || 'User';
-      nameEl.textContent = fullName;
-      handleEl.textContent = u.username ? '@' + u.username : 'ID: ' + u.id;
-      if (u.photo_url) {
-        photoEl.src = u.photo_url;
-      } else {
-        setAvatarFallback(u.username || String(u.id));
-      }
-    } else {
-      nameEl.textContent = 'Guest';
-      handleEl.textContent = '@guest';
-      setAvatarFallback('guest');
-    }
-
-    // ===== TonConnect UI (real connect) =====
-    const tonConnectUI = new TONCONNECTUI.TonConnectUI({
-      manifestUrl: location.origin + '/tonconnect-manifest.json',
-      buttonRootId: 'ton-connect',
-      uiPreferences: { theme: savedTheme === 'dark' ? 'DARK' : 'LIGHT' }
-    });
-
-    // همگام‌سازی تم TonConnect با تم خودمان
-    const syncTonTheme = () => {
-      tonConnectUI.uiOptions = { theme: html.getAttribute('data-theme') === 'dark' ? 'DARK' : 'LIGHT' };
-    };
-    themeToggle.addEventListener('click', syncTonTheme);
-
-    const walletAddrEl = document.getElementById('walletAddr');
-    const walletBalEl  = document.getElementById('walletBal');
-
-    async function fetchTonBalance(friendlyAddr) {
-      try {
-        // استفاده از public toncenter (بدون کلید؛ برای تست خوبه)
-        const body = {
-          jsonrpc: "2.0",
-          id: 1,
-          method: "getAddressBalance",
-          params: [friendlyAddr]
-        };
-        const res = await fetch('https://toncenter.com/api/v2/jsonRPC', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
-        const data = await res.json();
-        if (data?.result) {
-          const nano = BigInt(data.result);
-          const tons = Number(nano) / 1e9;
-          walletBalEl.textContent = 'Balance: ' + tons.toFixed(4) + ' TON';
-        } else {
-          walletBalEl.textContent = 'Balance: —';
-        }
-      } catch (e) {
-        walletBalEl.textContent = 'Balance: —';
-      }
-    }
-
-    async function onWalletChange() {
-      const acc = tonConnectUI.account;
-      if (acc && acc.address) {
-        walletAddrEl.textContent = acc.address.slice(0, 6) + '…' + acc.address.slice(-6);
-        walletAddrEl.title = acc.address;
-        fetchTonBalance(acc.address);
-        // اگر بک‌اند داری، می‌توانی اینجا ثبت اتصال را صدا بزنی:
-        // if (API_BASE && u?.id) {
-        //   fetch(API_BASE + '/api/users/connect-wallet', {
-        //     method: 'POST', headers: {'Content-Type':'application/json'},
-        //     body: JSON.stringify({ userId: String(u.id), wallet: acc.address })
-        //   });
-        // }
-      } else {
-        walletAddrEl.textContent = '—';
-        walletBalEl.textContent  = 'Balance: —';
-      }
-    }
-
-    tonConnectUI.onStatusChange(onWalletChange);
-    onWalletChange(); // بار اول
-
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
-
-
 
