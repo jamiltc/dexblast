@@ -1,3 +1,35 @@
+.hidden {
+  display: none;
+}
+
+#splash {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeOut 2.5s forwards;
+}
+
+.splash-logo {
+  width: 140px;
+  animation: logoPop 1.2s ease-out;
+}
+
+@keyframes logoPop {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; visibility: hidden; }
+}
+
 :root {
   --bg: #fff8c9;
   --fg: #1b1b1b;
@@ -171,5 +203,7 @@ body{
   color:var(--muted);
   font-size:12px;
 }
+
+
 
 
