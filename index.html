@@ -1,71 +1,66 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>DexBlast Mini App</title>
+
+  <!-- Telegram Mini App -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- TON Connect -->
+  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <div class="bg-egg"></div>
 
-  <div class="glass-panel">
-    <div class="top-bar">
-      <!-- Telegram Login Widget -->
-<script async src="https://telegram.org/js/telegram-widget.js?19"
-        data-telegram-login="dexblast_bot"
-        data-size="large"
-        data-radius="8"
-        data-userpic="true"
-        data-request-access="write"
-        data-onauth="onTelegramAuth(user)">
-</script>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>DexBlast</h1>
+      </div>
 
-<script>
-  function onTelegramAuth(user) {
-    console.log('✅ Telegram user data:', user);
+      <div class="actions">
+        <button id="themeToggle" class="ghost-btn">🌙</button>
+        <div id="ton-connect"></div>
+      </div>
+    </header>
 
-    // ارسال داده کاربر تلگرام به سرور اصلی
-    fetch("https://YOUR_BACKEND_URL/api/telegram-login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: user.id,
-        username: user.username,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        photo_url: user.photo_url,
-        auth_date: user.auth_date,
-        hash: user.hash
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      console.log("Server response:", data);
-      // ذخیره اطلاعات کاربر در مرورگر
-      localStorage.setItem("tg_user", JSON.stringify(user));
-      location.reload(); // رفرش برای نمایش پروفایل
-    })
-    .catch(err => console.error("❌ Error sending data:", err));
-  }
-</script>
+    <section class="glass">
+      <div class="profile">
+        <img id="userPhoto" class="avatar" />
+        <div class="who">
+          <div id="userName" class="name">Guest</div>
+          <div id="userHandle" class="handle">@guest</div>
+        </div>
 
-      <button id="theme-toggle">🌞</button>
-      <button id="connect-wallet">Connect Wallet</button>
-    </div>
+        <div class="wallet">
+          <div class="lbl">Wallet</div>
+          <div id="walletAddr" class="mono">—</div>
+          <div id="walletBal" class="mono small">Balance: —</div>
+        </div>
+      </div>
 
-    <div class="profile">
-      <img id="profile-pic" src="https://i.ibb.co/9vZf0cW/default-avatar.png" alt="profile" />
-      <h2 id="username">Guest</h2>
-    </div>
+      <div class="grid">
+        <div class="card soon">
+          <h3>Tasks</h3>
+          <p>Coming soon…</p>
+        </div>
+        <div class="card soon">
+          <h3>Referral</h3>
+          <p>Coming soon…</p>
+        </div>
+      </div>
+    </section>
 
-    <div class="coming-soon">
-      <h3>🎯 Tasks – Coming Soon</h3>
-      <h3>🤝 Referrals – Coming Soon</h3>
-    </div>
-  </div>
+    <footer class="foot">© DexBlast</footer>
+  </main>
 
-  <script src="script.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
 
